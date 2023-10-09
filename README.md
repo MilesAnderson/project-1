@@ -1,3 +1,7 @@
+Author: Miles Anderson
+Email: mander20@uoregon.edu
+Description: Provides a basic web server that can handle files within the doc root. Also throws an error if the file is not in the doc root, or illegal characters are present in the file name.
+
 # UOCIS322 - Project 1 #
 
 This project will get you started with creating a simple webpage server.
