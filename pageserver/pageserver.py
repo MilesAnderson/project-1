@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 
 import socket    # Basic TCP/IP communication on the internet
 import _thread   # Response computation runs concurrently with main program
-
+import os.path    # So I can check if the file is present it the docroot
 
 def listen(portnum):
     """
@@ -90,9 +90,40 @@ def respond(sock):
     log.info("Request was {}\n***\n".format(request))
 
     parts = request.split()
+    print('This is parts: ', parts)
     if len(parts) > 1 and parts[0] == "GET":
-        transmit(STATUS_OK, sock)
-        transmit(CAT, sock)
+# First, check for if it should display a cat
+        if parts[1] == '/':
+            transmit(STATUS_OK, sock)
+            transmit(CAT, sock)
+
+# Second, check for illegal characters
+        runThirdCond = True
+        address = parts[1]
+        for i in range(len(address)):
+            if (address[i] == '.' and address[i-1] == '.') or address[i] == '~':
+                log.info("Illegal characters: {}".format(request), sock)
+                transmit(STATUS_FORBIDDEN, sock)
+                transmit("403 Forbidden", sock)
+                runThirdCond = False
+
+# Third, I will check to see if the given file is present
+        options = get_options()
+        docroot = options.DOCROOT
+        if runThirdCond:
+            if parts[1] != '/':
+                path = docroot+parts[1]
+                if os.path.exists(path) == False:
+                    log.info("File Not Found: {}".format(request), sock)
+                    transmit(STATUS_NOT_FOUND, sock)
+                    transmit("404 Not Found", sock)
+                else:
+                    f = open(path, "r")
+                    log.info("File exists: {}".format(request), sock)
+                    transmit(STATUS_OK, sock)
+                    transmit(f.read(), sock)
+                    f.close()
+    	
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)

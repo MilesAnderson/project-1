@@ -2,6 +2,9 @@
 #
 
 # Nothing to install for this project.
+edit:
+	@(cd pageserver; vim pageserver.py)
+
 install:
 	@(echo "Nothing to install")
 
